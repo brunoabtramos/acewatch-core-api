@@ -1,321 +1,357 @@
-# AceWatch Core API 🎾
+# AceWatch 🎾
 
-API principal do sistema AceWatch desenvolvida com FastAPI e PostgreSQL. Responsável pela autenticação JWT, gerenciamento de dados e comunicação com o frontend.
+**AceWatch** é um sistema completo de monitoramento de tênis em tempo real, desenvolvido seguindo arquitetura de microsserviços. O sistema permite acompanhar partidas ao vivo, criar listas de favoritos e configurar alertas personalizados para eventos específicos das partidas.
 
-## 🔧 Tecnologias
+## 🏗️ Arquitetura do Sistema
 
-- **FastAPI** - Framework web moderno e rápido
+O AceWatch é composto por 3 módulos principais que se comunicam seguindo o padrão REST:
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│                 │    │                 │    │                 │
+│   Frontend      │◄──►│   Core API      │◄──►│ Scores Service  │
+│   (React)       │    │   (FastAPI)     │    │   (FastAPI)     │
+│                 │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                        │                        │
+         │                        ▼                        ▼
+         │              ┌─────────────────┐    ┌─────────────────┐
+         │              │                 │    │                 │
+         └─────────────►│   PostgreSQL    │    │   TheSportsDB   │
+                        │   Database      │    │   API (Externa) │
+                        │                 │    │                 │
+                        └─────────────────┘    └─────────────────┘
+```
+
+### Componentes
+
+1. **Frontend (React + Tailwind)**: Interface do usuário com dashboard, favoritos e alertas
+2. **Core API (FastAPI + PostgreSQL)**: API principal com autenticação JWT e CRUD completo
+3. **Scores Service (FastAPI)**: Serviço de integração com API externa TheSportsDB
+4. **PostgreSQL**: Banco de dados para persistência
+5. **TheSportsDB API**: Serviço externo para dados de tênis
+
+## 🚀 Tecnologias Utilizadas
+
+### Backend
+
+- **FastAPI** - Framework web moderno para Python
 - **PostgreSQL** - Banco de dados relacional
 - **SQLAlchemy** - ORM para Python
-- **Alembic** - Migrations de banco
 - **JWT** - Autenticação segura
-- **Pydantic** - Validação de dados
-- **WebSockets** - Comunicação em tempo real
+- **Docker** - Containerização
 
-## 🚀 Instalação Local
+### Frontend
+
+- **React 18** - Biblioteca JavaScript para UI
+- **Vite** - Build tool moderna
+- **Tailwind CSS** - Framework CSS utilitário
+- **Axios** - Cliente HTTP
+- **React Router** - Roteamento
+- **Lucide React** - Ícones
+
+### API Externa
+
+- **TheSportsDB** - API gratuita para dados esportivos
+  - Licença: Gratuita para uso educacional/desenvolvimento
+  - Cadastro: Não necessário (usa chave de teste)
+  - Rotas utilizadas: `/eventsday.php`, `/searchplayers.php`
+
+## 📋 Funcionalidades
+
+### ✅ Requisitos Atendidos
+
+- **4 Métodos HTTP**: GET (matches), POST (favorites), PUT (alerts), DELETE (favorites/alerts)
+- **Arquitetura de Microsserviços**: 3 módulos independentes
+- **API Externa**: Integração com TheSportsDB
+- **Banco de Dados**: PostgreSQL com 4 tabelas
+- **Dockerfiles**: Cada componente containerizado
+- **Autenticação JWT**: Sistema completo de login/registro
+
+### 🎯 Funcionalidades Principais
+
+- 📊 **Dashboard em tempo real** com partidas ao vivo
+- ⭐ **Sistema de favoritos** para partidas e jogadores
+- 🔔 **Alertas personalizados** para eventos específicos
+- 🔐 **Autenticação JWT** segura
+- 📱 **Interface responsiva** para todos os dispositivos
+- ⚡ **WebSocket** para atualizações em tempo real
+- 🎨 **UI moderna** com Tailwind CSS
+
+## 🛠️ Instalação e Configuração
 
 ### Pré-requisitos
 
-- Python 3.11+
-- PostgreSQL 13+
-- pip
+- Docker 20.0+
+- Docker Compose 2.0+
+- Node.js 18+ (para desenvolvimento)
+- Python 3.11+ (para desenvolvimento)
 
-### 1. Clone e Configure
+### 1. Clone os Repositórios
 
 ```bash
-git clone <url-do-repositorio>
-cd acewatch-core-api
+# Clone o repositório principal
+git clone <url-do-repositorio-principal>
+cd acewatch
 
-# Criar ambiente virtual
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate   # Windows
-
-# Instalar dependências
-pip install -r requirements.txt
+# Os 3 módulos devem estar em repositórios separados:
+# - acewatch-core-api
+# - acewatch-scores-service
+# - acewatch-frontend
 ```
 
-### 2. Configurar Banco de Dados
+### 2. Configuração de Ambiente
 
 ```bash
-# Criar banco PostgreSQL
-createdb acewatch_db
-
-# Configurar variáveis de ambiente
+# Copie o arquivo de exemplo
 cp .env.example .env
-# Editar .env com suas configurações
+
+# Edite as variáveis de ambiente conforme necessário
+nano .env
 ```
 
-### 3. Executar Aplicação
+### 3. Executar com Docker Compose
 
 ```bash
-# Modo desenvolvimento
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# Construir e iniciar todos os serviços
+docker-compose up --build
 
-# Ou usar o script
-python main.py
+# Ou executar em background
+docker-compose up -d --build
 ```
 
-## 🐳 Docker
+### 4. Verificar os Serviços
 
-### Executar com Docker
+Após a inicialização, os serviços estarão disponíveis em:
 
-```bash
-# Construir imagem
-cd .
-# Executar container
-docker run -d \
-  --name acewatch-core-api \
-  -p 8000:8000 \
-  -e DATABASE_URL=postgresql://user:pass@host:5432/db \
-  acewatch-core-api
+- **Frontend**: http://localhost:3000
+- **Core API**: http://localhost:8000
+- **PostgreSQL**: localhost:5435
+
+## 🗂️ Estrutura do Projeto
+
+```
+acewatch/
+├── acewatch-core-api/          # API principal (FastAPI)
+│   ├── app/
+│   │   ├── auth.py            # Autenticação JWT
+│   │   ├── crud.py            # Operações CRUD
+│   │   ├── database.py        # Configuração DB
+│   │   ├── models.py          # Modelos SQLAlchemy
+│   │   └── schemas.py         # Schemas Pydantic
+│   ├── Dockerfile
+│   ├── main.py
+│   └── requirements.txt
+├── acewatch-scores-service/    # Serviço de scores
+│   ├── app/
+│   │   ├── data_processor.py  # Processamento de dados
+│   │   ├── models.py          # Modelos Pydantic
+│   │   └── thesportsdb.py     # Cliente API externa
+│   ├── Dockerfile
+│   ├── main.py
+│   └── requirements.txt
+├── acewatch-frontend/          # Interface React
+│   ├── src/
+│   │   ├── components/        # Componentes reutilizáveis
+│   │   ├── contexts/          # Contextos React
+│   │   ├── pages/             # Páginas da aplicação
+│   │   └── services/          # Serviços de API
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   └── package.json
+├── database/
+│   └── init.sql              # Script de inicialização
+├── docker-compose.yml        # Orquestração dos serviços
+└── README.md                 # Este arquivo
 ```
 
-### Health Check
+## 🎮 Como Usar
 
-O container possui health check automático verificando o endpoint `/health`
+### 1. Acesse a Aplicação
+
+Abra http://localhost:3000 no seu navegador
+
+### 2. Crie uma Conta
+
+- Clique em "Sign up"
+- Preencha email e senha
+- Faça login automático
+
+### 3. Explore o Dashboard
+
+- Visualize partidas ao vivo com indicador "LIVE"
+- Veja partidas agendadas e resultados
+- Use filtros por status e data
+
+### 4. Gerencie Favoritos
+
+- Clique no ❤️ em qualquer partida
+- Acesse "Favorites" no menu
+- Remova favoritos quando desejar
+
+### 5. Configure Alertas
+
+- Clique no 🔔 em qualquer partida
+- Escolha o tipo de alerta
+- Gerencie em "Alerts"
 
 ## 📊 API Endpoints
 
 ### Autenticação
 
+- `POST /auth/login` - Login do usuário
 - `POST /auth/register` - Registro de usuário
-- `POST /auth/login` - Login (retorna JWT)
-- `GET /auth/me` - Dados do usuário autenticado
+- `GET /auth/me` - Dados do usuário atual
 
 ### Partidas
 
-- `GET /matches` - Listar partidas com filtros
-  - Query params: `date`, `status`, `page`, `limit`
+- `GET /matches` - Listar partidas (com filtros)
 - `GET /matches/{id}` - Detalhes de uma partida
-- `POST /matches` - Criar partida (usado pelo scores-service)
+- `POST /matches` - Criar partida (interno)
 
 ### Favoritos
 
 - `GET /favorites` - Listar favoritos do usuário
-- `POST /favorites` - Adicionar aos favoritos
+- `POST /favorites` - Adicionar favorito
 - `DELETE /favorites/{id}` - Remover favorito
 
 ### Alertas
 
 - `GET /alerts` - Listar alertas do usuário
-- `POST /alerts` - Criar novo alerta
+- `POST /alerts` - Criar alerta
 - `PUT /alerts/{id}` - Atualizar alerta
 - `DELETE /alerts/{id}` - Remover alerta
 
-### WebSocket
+## 🔧 Desenvolvimento
 
-- `WS /ws/live` - Conexão para atualizações em tempo real
+### Executar Localmente
 
-### Sistema
-
-- `GET /health` - Status da API
-
-## 🗄️ Modelos de Dados
-
-### User
-
-```python
-{
-    "id": int,
-    "email": str,
-    "created_at": datetime
-}
-```
-
-### Match
-
-```python
-{
-    "id": int,
-    "external_event_id": str,
-    "league": str,
-    "round": str,
-    "home_player": str,
-    "away_player": str,
-    "start_time": datetime,
-    "status": str,  # "Scheduled", "In Play", "Finished"
-    "score_json": dict,
-    "last_fetch_at": datetime
-}
-```
-
-### Favorite
-
-```python
-{
-    "id": int,
-    "user_id": int,
-    "type": str,  # "player" or "match"
-    "external_player_id": str,
-    "external_event_id": str,
-    "match_id": int,
-    "created_at": datetime
-}
-```
-
-### Alert
-
-```python
-{
-    "id": int,
-    "user_id": int,
-    "match_id": int,
-    "trigger": str,  # "match_started", "tie_break", "third_set", "match_finished"
-    "is_active": bool,
-    "created_at": datetime
-}
-```
-
-## 🔐 Autenticação
-
-A API usa JWT (JSON Web Tokens) para autenticação:
-
-1. **Registro/Login**: Cliente envia credenciais
-2. **Token JWT**: API retorna token assinado
-3. **Autorização**: Cliente inclui token no header `Authorization: Bearer <token>`
-4. **Validação**: API valida token em rotas protegidas
-
-### Configuração JWT
-
-```env
-SECRET_KEY=your-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-## 🔄 WebSocket para Live Updates
-
-O sistema suporta WebSocket para atualizações em tempo real:
-
-```javascript
-// Conectar ao WebSocket
-const ws = new WebSocket("ws://localhost:8000/ws/live");
-
-// Receber atualizações
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  // Atualizar UI com novos dados
-};
-```
-
-## 📁 Estrutura de Arquivos
-
-```
-acewatch-core-api/
-├── app/
-│   ├── __init__.py
-│   ├── auth.py          # Autenticação JWT
-│   ├── crud.py          # Operações CRUD
-│   ├── database.py      # Configuração do banco
-│   ├── models.py        # Modelos SQLAlchemy
-│   └── schemas.py       # Schemas Pydantic
-├── Dockerfile           # Container Docker
-├── main.py             # Aplicação FastAPI
-├── requirements.txt    # Dependências Python
-├── .env.example       # Exemplo de configuração
-└── README.md          # Este arquivo
-```
-
-## ⚡ Performance e Otimização
-
-### Índices do Banco
-
-- Índices criados automaticamente via SQL init
-- Consultas otimizadas para filtros comuns
-- Paginação implementada
-
-### Cache
-
-- SQLAlchemy session pool
-- Conexões persistentes
-- Queries otimizadas
-
-### Monitoramento
-
-- Health checks automáticos
-- Logs estruturados
-- Métricas de performance
-
-## 🧪 Testes
+#### Core API
 
 ```bash
-# Instalar dependências de teste
-pip install pytest pytest-asyncio httpx
-
-# Executar testes
-pytest
-
-# Com coverage
-pytest --cov=app
+cd acewatch-core-api
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
 ```
 
-## 📝 Logs
-
-A aplicação gera logs estruturados:
+#### Scores Service
 
 ```bash
-# Ver logs em desenvolvimento
-tail -f app.log
-
-# Ver logs do Docker
-docker logs acewatch-core-api -f
+cd acewatch-scores-service
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8001
 ```
+
+#### Frontend
+
+```bash
+cd acewatch-frontend
+npm install
+npm run dev
+```
+
+### Executar Testes
+
+```bash
+# Testes do backend
+docker-compose exec core-api python -m pytest
+
+# Testes do frontend
+docker-compose exec frontend npm test
+```
+
+## 🌐 API Externa - TheSportsDB
+
+### Informações da API
+
+- **Nome**: TheSportsDB
+- **URL**: https://www.thesportsdb.com
+- **Licença**: Gratuita para desenvolvimento/educação
+- **Cadastro**: Não necessário (chave de teste: "3")
+- **Limitações**: Sem livescore real-time na versão gratuita
+
+### Rotas Utilizadas
+
+- `GET /eventsday.php?d=YYYY-MM-DD&s=Tennis` - Eventos por data
+- `GET /searchplayers.php?p={query}` - Buscar jogadores
+- `GET /lookupevent.php?id={eventId}` - Detalhes do evento
+
+### Tratamento de Dados
+
+Todos os dados da API externa são:
+
+- Processados e normalizados pelo Scores Service
+- Armazenados no banco PostgreSQL
+- Exibidos através da nossa interface
+- **Não redirecionam** para aplicações externas
+
+## 📝 Logs e Monitoramento
+
+### Visualizar Logs
+
+```bash
+# Logs de todos os serviços
+docker-compose logs -f
+
+# Logs de um serviço específico
+docker-compose logs -f core-api
+docker-compose logs -f scores-service
+docker-compose logs -f frontend
+```
+
+### Health Checks
+
+Todos os serviços possuem endpoints de health:
+
+- Core API: `GET /health`
+- Scores Service: `GET /health`
+- Frontend: `GET /` (nginx)
 
 ## 🚨 Troubleshooting
 
 ### Problemas Comuns
 
-1. **Erro de conexão com banco**
+1. **Porta já em uso**
 
-   - Verificar se PostgreSQL está rodando
-   - Conferir variáveis de ambiente
-   - Testar conexão manual
+   ```bash
+   # Parar todos os containers
+   docker-compose down
+   # PostgreSQL configurado para porta 5435 para evitar conflito com instalação local
+   # Se ainda houver conflito, modifique as portas no docker-compose.yml
+   ```
 
-2. **Token JWT inválido**
+2. **Banco de dados não conecta**
 
-   - Verificar SECRET_KEY
-   - Confirmar formato do header Authorization
-   - Checar expiração do token
+   ```bash
+   # Verificar se o PostgreSQL subiu
+   docker-compose logs db
+   # Aguardar o health check passar
+   ```
 
-3. **Erro de CORS**
-   - Verificar configuração CORS no main.py
-   - Confirmar origem do frontend
+3. **Frontend não carrega**
+   ```bash
+   # Verificar se a API está rodando
+   curl http://localhost:8000/health
+   # Verificar configuração de proxy no nginx.conf
+   ```
 
-## 🔧 Configuração de Produção
+## 🤝 Contribuição
 
-### Variáveis de Ambiente
+1. Fork o projeto
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
+5. Abra um Pull Request
 
-```env
-DATABASE_URL=postgresql://user:pass@host:5432/db
-SECRET_KEY=strong-secret-key-for-production
-DEBUG=False
-CORS_ORIGINS=https://yourdomain.com
-```
+## 📄 Licença
 
-### Deploy com Docker
+Este projeto é desenvolvido para fins educacionais como parte do MVP do curso de Desenvolvimento Full Stack.
 
-```dockerfile
-# Usar imagem de produção
-FROM python:3.11-slim
+## 👥 Autores
 
-# Configurações de segurança
-USER appuser
-EXPOSE 8000
-
-# Health check
-HEALTHCHECK --interval=30s CMD curl -f http://localhost:8000/health
-```
-
-## 📋 TODO / Melhorias Futuras
-
-- [ ] Rate limiting
-- [ ] Cache Redis
-- [ ] Observabilidade (Prometheus/Grafana)
-- [ ] Testes de integração
-- [ ] CI/CD pipeline
-- [ ] Backup automático do banco
+- Desenvolvido como projeto acadêmico
+- Utiliza dados da API gratuita TheSportsDB
 
 ---
 
-Desenvolvido como parte do MVP AceWatch 🎾
+**AceWatch** - Acompanhe o tênis como nunca antes! 🎾✨
