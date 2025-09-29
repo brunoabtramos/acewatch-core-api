@@ -1,3 +1,5 @@
+Vídeo explicativo: https://youtu.be/wpw-ar5cPGQ
+
 # AceWatch 🎾
 
 **AceWatch** é um sistema completo de monitoramento de tênis em tempo real, desenvolvido seguindo arquitetura de microsserviços. O sistema permite acompanhar partidas ao vivo, criar listas de favoritos e configurar alertas personalizados para eventos específicos das partidas.
